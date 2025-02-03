@@ -112,6 +112,3 @@ Make sure you have the following installed:
 If you'd like to contribute to the project, please fork the repository and submit a pull request.
 
 
-## Contact
-
-For any inquiries or issues, please contact [mohammednuman71417@gmail.com](mailto:mohammednuman71417@gmail.com).
