@@ -1,0 +1,50 @@
+/* Main editor container border */
+.ql-container {
+    border: 1px solid white;
+    background-color: #1a1a1a; /* Dark background */
+    color: white; /* Text color */
+  }
+  
+  /* Toolbar styles */
+  .ql-toolbar {
+    border: 1px solid white;
+    background-color: #1a1a1a; /* Dark background */
+  }
+  
+  /* Button icon colors in the toolbar */
+  .ql-toolbar .ql-picker-label, 
+  .ql-toolbar .ql-picker-item, 
+  .ql-toolbar button {
+    color: white;
+  }
+  
+  /* Button background and border on hover */
+  .ql-toolbar .ql-picker-label:hover, 
+  .ql-toolbar .ql-picker-item:hover, 
+  .ql-toolbar button:hover {
+    background-color: #333333; /* Slightly lighter background on hover */
+    border-color: white;
+  }
+  
+  /* Selected button/icon background */
+  .ql-toolbar .ql-active, 
+  .ql-toolbar .ql-picker-label.ql-active {
+    background-color: #444444; /* Highlight active icon */
+    border-color: white;
+  }
+  
+  /* Dropdown menus in the toolbar */
+  .ql-toolbar .ql-picker-options {
+    background-color: #1a1a1a;
+    border: 1px solid white;
+  }
+  
+  .ql-toolbar .ql-stroke,
+  .ql-toolbar .ql-fill,
+  .ql-toolbar .ql-picker .ql-fill,
+  .ql-toolbar .ql-picker .ql-stroke {
+    stroke: white !important;
+  
+  }
+  
+  
