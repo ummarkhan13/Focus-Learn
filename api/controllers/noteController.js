@@ -4,15 +4,40 @@ const Note = require('../models/noteModel');
 const Chapter = require('../models/chapterModels');
 const Journey = require('../models/journeyModel');
 
+const assertJourneyOwned = async (journeyId, userId) => {
+    const journey = await Journey.getJourneyById(journeyId, userId);
+    return journey && journey.user_id === userId;
+};
+
+const getOwnedChapter = async (chapterId, userId) => {
+    const chapter = await Chapter.getChapterById(chapterId);
+    if (!chapter) return null;
+
+    const isOwner = await assertJourneyOwned(chapter.journey_id, userId);
+    if (!isOwner) return null;
+
+    return chapter;
+};
+
+const getOwnedNote = async (noteId, userId) => {
+    const note = await Note.getNoteById(noteId);
+    if (!note) return null;
+
+    const isOwner = await assertJourneyOwned(note.journey_id, userId);
+    if (!isOwner) return null;
+
+    return note;
+};
+
 // Create a new note
 exports.createNote = async (req, res) => {
     try {
         const {content } = req.body;
         const { journeyId, chapterId } = req.params;
 
-        // Validate if journey exists
-        const journey = await Journey.getJourneyById(journeyId);
-        if (!journey) {
+        // Validate if journey exists and belongs to user
+        const isJourneyOwner = await assertJourneyOwned(journeyId, req.user.id);
+        if (!isJourneyOwner) {
             return res.status(404).json({ message: 'Journey not found' });
         }
 
@@ -40,8 +65,8 @@ exports.getNotesByChapter = async (req, res) => {
     try {
         const { chapterId } = req.params;
 
-        // Validate if chapter exists
-        const chapter = await Chapter.getChapterById(chapterId);
+        // Validate if chapter exists and belongs to user
+        const chapter = await getOwnedChapter(chapterId, req.user.id);
         if (!chapter) {
             return res.status(404).json({ message: 'Chapter not found' });
         }
@@ -59,9 +84,9 @@ exports.getNotesByJourney = async (req, res) => {
     try {
         const { journeyId } = req.params;
 
-        // Validate if journey exists
-        const journey = await Journey.getJourneyById(journeyId);
-        if (!journey) {
+        // Validate if journey exists and belongs to user
+        const isJourneyOwner = await assertJourneyOwned(journeyId, req.user.id);
+        if (!isJourneyOwner) {
             return res.status(404).json({ message: 'Journey not found' });
         }
 
@@ -78,7 +103,7 @@ exports.getNoteById = async (req, res) => {
     try {
         const { noteId } = req.params;
 
-        const note = await Note.getNoteById(noteId);
+        const note = await getOwnedNote(noteId, req.user.id);
         if (!note) {
             return res.status(404).json({ message: 'Note not found' });
         }
@@ -96,7 +121,7 @@ exports.updateNote = async (req, res) => {
         const { noteId } = req.params;
         const { content } = req.body;
 
-        const noteExists = await Note.getNoteById(noteId);
+        const noteExists = await getOwnedNote(noteId, req.user.id);
         if (!noteExists) {
             return res.status(404).json({ message: 'Note not found' });
         }
@@ -118,7 +143,7 @@ exports.deleteNote = async (req, res) => {
     try {
         const { noteId } = req.params;
 
-        const noteExists = await Note.getNoteById(noteId);
+        const noteExists = await getOwnedNote(noteId, req.user.id);
         if (!noteExists) {
             return res.status(404).json({ message: 'Note not found' });
         }

@@ -1,9 +1,8 @@
 import { apiurl } from ".";
 import { getAuthToken } from "./journeys";
 
-const token = getAuthToken();
-
 const fetchWithToken = async (url, options = {}) => {
+  const token = getAuthToken();
   const headers = {
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${token}`,

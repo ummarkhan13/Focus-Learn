@@ -12,7 +12,11 @@ import Auth from "./Pages/Auth";
 import Notes from "./Pages/Notes";
 
 function getPayload(jwt) {
-  return JSON.parse(atob(jwt.split(".")[1]));
+  try {
+    return JSON.parse(atob(jwt.split(".")[1]));
+  } catch (error) {
+    return null;
+  }
 }
 
 
@@ -25,6 +29,11 @@ function App() {
 
     if (token) {
       const payload = getPayload(token);
+      if (!payload) {
+        Cookies.remove("authToken");
+        navigate("/auth");
+        return;
+      }
       const expiration = new Date(payload.exp * 1000); 
       const now = new Date();
 

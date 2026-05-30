@@ -73,7 +73,7 @@ const AddNotes = ({journeyId,chapterId}) => {
     const fetchNotes = async()=>{
       try {
         const response = await getNotesByChapter(chapterId);
-        if(response){
+        if(response && response.length > 0){
 
           setValue(response[0].content)
           setSubmit(false)

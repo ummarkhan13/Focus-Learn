@@ -1,25 +1,41 @@
-const fetch = require('node-fetch');
 const dotenv = require('dotenv');
 dotenv.config();
 const YOUTUBE_API_KEY = process.env.YT_KEY;
 
+const isYouTubeApiKeyConfigured = () => YOUTUBE_API_KEY && YOUTUBE_API_KEY !== 'your-api-key';
+
+const getYouTubeError = async (response, fallbackMessage) => {
+    try {
+        const data = await response.json();
+        return new Error(data.error?.message || fallbackMessage);
+    } catch (error) {
+        return new Error(fallbackMessage);
+    }
+};
+
 // Fetch playlist details (title, description)
 const getPlaylistDetails = async (playlistId) => {
     try {
-        const response = await fetch(`https://www.googleapis.com/youtube/v3/playlists?part=snippet&id=${playlistId}&key=${YOUTUBE_API_KEY}`);
+        if (!isYouTubeApiKeyConfigured()) {
+            throw new Error('YouTube API key is not configured');
+        }
+
+        const response = await fetch(`https://www.googleapis.com/youtube/v3/playlists?part=snippet&id=${encodeURIComponent(playlistId)}&key=${encodeURIComponent(YOUTUBE_API_KEY)}`);
 
         if (!response.ok) {
-            throw new Error(`Error fetching playlist details: ${response.statusText}`);
+            throw await getYouTubeError(response, `Error fetching playlist details: ${response.statusText}`);
         }
 
         const data = await response.json();
-        const playlist = data.items[0].snippet;
+        const playlist = data.items && data.items[0];
 
-        console.log(playlist.title,playlist.description);
+        if (!playlist) {
+            throw new Error('Playlist not found');
+        }
 
         return {
-            title: playlist.title,
-            description: playlist.description
+            title: playlist.snippet.title,
+            description: playlist.snippet.description
         };
     } catch (error) {
         console.error('Error fetching playlist details:', error);
@@ -30,17 +46,21 @@ const getPlaylistDetails = async (playlistId) => {
 // Fetch playlist videos
 const getPlaylistVideos = async (playlistId) => {
     try {
-        const response = await fetch(`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${playlistId}&maxResults=50&key=${YOUTUBE_API_KEY}`);
+        if (!isYouTubeApiKeyConfigured()) {
+            throw new Error('YouTube API key is not configured');
+        }
+
+        const response = await fetch(`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${encodeURIComponent(playlistId)}&maxResults=50&key=${encodeURIComponent(YOUTUBE_API_KEY)}`);
 
         if (!response.ok) {
-            throw new Error(`Error fetching playlist videos: ${response.statusText}`);
+            throw await getYouTubeError(response, `Error fetching playlist videos: ${response.statusText}`);
         }
 
         const data = await response.json();
 
-        return data.items.map((item, index) => ({
+        return (data.items || []).map((item, index) => ({
             title: item.snippet.title,
-            videoLink: `https://www.youtube.com/watch?v=${item.snippet.resourceId.videoId}`,
+            videoLink: item.snippet.resourceId?.videoId ? `https://www.youtube.com/watch?v=${item.snippet.resourceId.videoId}` : '',
             description: item.snippet.description ? item.snippet.description.substring(0, 150) : '', 
             chapterNo: index + 1
         }));

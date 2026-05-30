@@ -53,42 +53,157 @@ Users can:
 
 ## Setup
 
-To get started with this project, follow these steps:
+The recommended way to run the full project locally is with Docker Compose. This starts MySQL, the backend API, and the frontend app together.
 
 ### Prerequisites
 
 Make sure you have the following installed:
 
-- Node.js (version 14 or higher)
-- npm (version 6 or higher) or Yarn
-- MySQL or another compatible database
+- Docker Desktop
+- Git
+- Node.js 20+ and npm, only if you want to run commands outside Docker
 
-### Installation
+### Clone the repository
 
-1. **Clone the repository:**
+```bash
+git clone https://github.com/mdnumanraza/focusLearn.git
+cd focusLearn
+```
 
-    ```bash
-    git clone https://github.com/mdnumanraza/focusLearn.git
-    cd focusLearn
-    ```
+### Run with Docker Compose
 
-2. **Install dependencies:**
+From the project root, run:
 
-    ```bash
-    npm install
-    ```
+```bash
+docker compose up --build
+```
 
-3. **Set up environment variables:**
+After startup, open:
 
-    Create a `.env` file in the root directory of the api and reffer `.env.example` file for env variables
+- Frontend: `http://localhost:5173`
+- Backend: `http://localhost:5000`
+- API base URL: `http://localhost:5000/api/v1`
 
-4. **Start the development server:**
+The Compose stack includes:
 
-    ```bash
-    npm start
-    ```
+- `focus-learn-mysql` on port `3306`
+- `focus-learn-backend` on port `5000`
+- `focus-learn-frontend` on port `5173`
 
-    The application should now be running at `http://localhost:5173`.
+### YouTube API key setup
+
+Playlist import requires a YouTube Data API v3 key. In `docker-compose.yml`, replace the placeholder value:
+
+```yaml
+YT_KEY: your-api-key
+```
+
+with your real key:
+
+```yaml
+YT_KEY: your-real-youtube-api-key
+```
+
+Then restart the backend container:
+
+```bash
+docker compose restart backend
+```
+
+If the key is still set to `your-api-key`, playlist import will return `YouTube API key is not configured`.
+
+### Stop the containers
+
+```bash
+docker compose down
+```
+
+### Reset the database
+
+This removes the MySQL Docker volume and recreates the database from `api/table.sql`.
+
+```bash
+docker compose down -v
+docker compose up --build
+```
+
+### Inspect the Docker database
+
+Show databases:
+
+```bash
+docker exec focus-learn-mysql mysql -uroot -e "SHOW DATABASES;"
+```
+
+Show tables:
+
+```bash
+docker exec focus-learn-mysql mysql -uroot --database=focuslearn-DB -e "SHOW TABLES;"
+```
+
+View table data:
+
+```bash
+docker exec focus-learn-mysql mysql -uroot --database=focuslearn-DB -e "SELECT * FROM users;"
+docker exec focus-learn-mysql mysql -uroot --database=focuslearn-DB -e "SELECT * FROM journeys;"
+docker exec focus-learn-mysql mysql -uroot --database=focuslearn-DB -e "SELECT * FROM chapters;"
+docker exec focus-learn-mysql mysql -uroot --database=focuslearn-DB -e "SELECT * FROM notes;"
+```
+
+Open an interactive MySQL shell:
+
+```bash
+docker exec -it focus-learn-mysql mysql -uroot --database=focuslearn-DB
+```
+
+### Verify the project
+
+Run the API smoke test while the Docker containers are running:
+
+```bash
+node api-test.js
+```
+
+Expected result:
+
+```text
+=== SUMMARY: 35 passed, 0 failed ===
+```
+
+Build the frontend locally:
+
+```bash
+cd client
+npm run build
+```
+
+Validate Docker Compose configuration:
+
+```bash
+docker compose config
+```
+
+### Commit and push changes
+
+Before committing, check the working tree:
+
+```bash
+git status --short
+git diff --check
+```
+
+Stage the project changes:
+
+```bash
+git add api/controllers/auth.js api/controllers/chapterController.js api/controllers/journeys.js api/controllers/noteController.js api/controllers/playlistJourney.js api/controllers/userController.js api/index.js api/models/journeyModel.js api/routes/users.js client/src/Api/chapters.js client/src/Api/index.js client/src/Api/journeys.js client/src/Api/notes.js client/src/App.jsx client/src/Components/forms/AddNotes.jsx client/src/Pages/Explore.jsx api-test.js api/.dockerignore api/Dockerfile client/.dockerignore client/Dockerfile docker-compose.yml readme.md
+```
+
+Commit and push:
+
+```bash
+git commit -m "Fix auth security, ownership checks, and add Docker setup"
+git push
+```
 
 ## Usage
 

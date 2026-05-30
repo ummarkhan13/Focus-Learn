@@ -111,7 +111,7 @@ export const updateJourney = async (journeyId, updatedJourneyData) => {
   const token = getAuthToken();
   
   try {
-    const response = await fetch(`${API_BASE_URL}/journeys/${journeyId}`, {
+    const response = await fetch(`${apiurl}/journeys/${journeyId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',

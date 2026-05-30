@@ -2,9 +2,9 @@ import { apiurl } from ".";
 import { getAuthToken } from "./journeys";
 
 
-const token = getAuthToken();
 
   export const getChaptersById = async(chapterId)=>{
+    const token = getAuthToken();
 
     try {
         const response = await fetch(`${apiurl}/journeys/chapters/${chapterId}`, {
@@ -21,6 +21,7 @@ const token = getAuthToken();
       }
 };
   export const getChaptersByJourneyId = async(journeyId)=>{
+    const token = getAuthToken();
     try {
         const response = await fetch(`${apiurl}/journeys/${journeyId}/chapters`, {
             method: 'GET',
@@ -37,6 +38,7 @@ const token = getAuthToken();
 };
 
 export const createChapter = async(journeyId,chapterData)=>{
+    const token = getAuthToken();
     if (!token) {
         alert('Authentication token is missing.');
         return;
@@ -66,6 +68,7 @@ export const createChapter = async(journeyId,chapterData)=>{
 }
 
 export const deleteChapter = async(chapterId) => {
+    const token = getAuthToken();
     try {
       const response = await fetch(`${apiurl}/journeys/chapters/${chapterId}`, {
         method: 'DELETE',
@@ -88,6 +91,7 @@ export const deleteChapter = async(chapterId) => {
   };
 
   export const updateChapterComplete = async(chapterId, chapterData) => {
+    const token = getAuthToken();
     try {
       const response = await fetch(`${apiurl}/journeys/chapters/isComplete/${chapterId}`, {
         method: 'PUT',  
@@ -111,6 +115,7 @@ export const deleteChapter = async(chapterId) => {
     }
   };
   export const updateChapter = async(chapterId, chapterData) => {
+    const token = getAuthToken();
     try {
       const response = await fetch(`${apiurl}/journeys/chapters/${chapterId}`, {
         method: 'PUT',  

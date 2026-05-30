@@ -1,0 +1,53 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: focus-learn-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: focuslearn-DB
+    ports:
+      - "3306:3306"
+    volumes:
+      - focus_learn_mysql_data:/var/lib/mysql
+      - ./api/table.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./api
+    container_name: focus-learn-backend
+    restart: unless-stopped
+    environment:
+      HOST: mysql
+      USER: root
+      PASS: ""
+      DB: focuslearn-DB
+      JWT: focus-learn-dev-secret
+      PORT: 5000
+      YT_KEY: your-api-key
+      CLIENT_ORIGIN: http://localhost:5173
+    ports:
+      - "5000:5000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./client
+    container_name: focus-learn-frontend
+    restart: unless-stopped
+    environment:
+      VITE_API_URL: http://localhost:5000/api/v1
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+volumes:
+  focus_learn_mysql_data:

@@ -23,8 +23,8 @@ const Explore = () => {
 
   const handleFork = async (journeyId) => {
     try {
-      const { newJourneyId } = await forkJourney(journeyId);
-      alert('Journey forked successfully! with id ',newJourneyId); // Optionally, redirect to the new journey
+      const { journeyId: newJourneyId } = await forkJourney(journeyId);
+      alert(`Journey forked successfully! with id ${newJourneyId}`); // Optionally, redirect to the new journey
         navigate('/')
     } catch (error) {
       console.error(error);

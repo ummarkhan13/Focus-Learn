@@ -20,8 +20,11 @@ exports.getAllJourneys = async (userId) => {
     return rows;
 };
 
-exports.getJourneyById = async (id) => {
-    const [rows] = await db.execute('SELECT * FROM journeys WHERE id = ?', [id]);
+exports.getJourneyById = async (id, userId) => {
+    const [rows] = await db.execute(
+        'SELECT * FROM journeys WHERE id = ? AND (user_id = ? OR is_public = 1)',
+        [id, userId]
+    );
     return rows[0];
 };
 
@@ -137,9 +140,9 @@ exports.forkJourney = async (journeyId, userId) => {
     try {
         await connection.beginTransaction();
 
-        // Step 1: Get the original journey details
+        // Step 1: Get the original journey details (must be public)
         const [journey] = await connection.execute(
-            'SELECT * FROM journeys WHERE id = ?',
+            'SELECT * FROM journeys WHERE id = ? AND is_public = 1',
             [journeyId]
         );
 
@@ -231,7 +234,6 @@ exports.getAllPublicJourneys = async () => {
     
     try {
       const [rows] = await db.query(query);
-      console.log(rows);
       return rows;
     } catch (error) {
       throw new Error('Error fetching public journeys');

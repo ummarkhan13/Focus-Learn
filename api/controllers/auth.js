@@ -1,7 +1,14 @@
 const jwt = require('jsonwebtoken');
+const dotenv = require('dotenv');
+
+dotenv.config();
 
 // Secret key for JWT
 const JWT_SECRET = process.env.JWT;
+
+if (!JWT_SECRET) {
+    throw new Error('JWT secret is not configured');
+}
 
 // Middleware to authenticate JWT token
 function authenticateToken(req, res, next) {

@@ -1,7 +1,11 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
-const JWT_SECRET = process.env.JWT || 'thisisjwt';
+const JWT_SECRET = process.env.JWT;
+
+if (!JWT_SECRET) {
+    throw new Error('JWT secret is not configured');
+}
 
 exports.registerUser = async (req, res) => {
     try {
@@ -25,7 +29,7 @@ exports.registerUser = async (req, res) => {
 
         res.status(201).json({ id: userId });
     } catch (error) {
-        res.status(500).json({ error: error });
+        res.status(500).json({ error: error.message });
     }
 };
 

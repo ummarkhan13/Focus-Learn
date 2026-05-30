@@ -1,8 +1,29 @@
 const Chapter = require('../models/chapterModels');
+const Journey = require('../models/journeyModel');
+
+const assertJourneyOwned = async (journeyId, userId) => {
+    const journey = await Journey.getJourneyById(journeyId, userId);
+    return journey && journey.user_id === userId;
+};
+
+const getOwnedChapter = async (chapterId, userId) => {
+    const chapter = await Chapter.getChapterById(chapterId);
+    if (!chapter) return null;
+
+    const journey = await Journey.getJourneyById(chapter.journey_id, userId);
+    if (!journey || journey.user_id !== userId) return null;
+
+    return chapter;
+};
 
 // Create a new chapter
 exports.createChapter = async (req, res) => {
     try {
+        const isOwner = await assertJourneyOwned(req.params.journeyId, req.user.id);
+        if (!isOwner) {
+            return res.status(404).json({ message: 'Journey not found' });
+        }
+
         const chapterId = await Chapter.createChapter({
             title: req.body.title,
             description: req.body.description,
@@ -20,6 +41,11 @@ exports.createChapter = async (req, res) => {
 // Get all chapters for a specific journey
 exports.getChaptersByJourneyId = async (req, res) => {
     try {
+        const isOwner = await assertJourneyOwned(req.params.journeyId, req.user.id);
+        if (!isOwner) {
+            return res.status(404).json({ message: 'Journey not found' });
+        }
+
         const chapters = await Chapter.getChaptersByJourneyId(req.params.journeyId);
         res.json(chapters);
     } catch (error) {
@@ -30,7 +56,7 @@ exports.getChaptersByJourneyId = async (req, res) => {
 // Get a specific chapter by ID
 exports.getChapterById = async (req, res) => {
     try {
-        const chapter = await Chapter.getChapterById(req.params.id);
+        const chapter = await getOwnedChapter(req.params.id, req.user.id);
         if (!chapter) {
             return res.status(404).json({ message: 'Chapter not found' });
         }
@@ -43,6 +69,11 @@ exports.getChapterById = async (req, res) => {
 // Update a chapter by ID
 exports.updateChapter = async (req, res) => {
     try {
+        const chapter = await getOwnedChapter(req.params.id, req.user.id);
+        if (!chapter) {
+            return res.status(404).json({ message: 'Chapter not found' });
+        }
+
         const updated = await Chapter.updateChapter(req.params.id, {
             title: req.body.title,
             description: req.body.description,
@@ -61,6 +92,11 @@ exports.updateChapter = async (req, res) => {
 
 exports.updateChapterCompleted = async (req, res) => {
     try {
+        const chapter = await getOwnedChapter(req.params.id, req.user.id);
+        if (!chapter) {
+            return res.status(404).json({ message: 'Chapter not found' });
+        }
+
         const updated = await Chapter.updateChapterComplete(req.params.id, {
             is_completed: req.body.is_completed,
             
@@ -77,6 +113,11 @@ exports.updateChapterCompleted = async (req, res) => {
 // Delete a chapter by ID
 exports.deleteChapter = async (req, res) => {
     try {
+        const chapter = await getOwnedChapter(req.params.id, req.user.id);
+        if (!chapter) {
+            return res.status(404).json({ message: 'Chapter not found' });
+        }
+
         const deleted = await Chapter.deleteChapter(req.params.id);
         if (!deleted) {
             return res.status(404).json({ message: 'Chapter not found' });

@@ -14,9 +14,8 @@ const app = express();
 app.use(express.json())
 
 app.use(cors({
-    origin: '*',
-    credentials: true,
-  }));
+    origin: process.env.CLIENT_ORIGIN || 'http://localhost:5173',
+}));
 
 // routes
 app.use('/api/v1/users', userRoutes);
